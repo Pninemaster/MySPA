@@ -21,12 +21,16 @@
         <button @click="store.removeTransaction(t.id)">Remove</button>
       </li>
     </ul>
+
+    <!-- ✅ Move PieChart inside the main container -->
+    <PieChart :income="store.totalIncome" :expense="store.totalExpense" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useBudgetStore } from '../stores/budgetStore'
+import PieChart from '../components/Budget/PieChart.vue'  // ✅ Make sure this import exists!
 
 const store = useBudgetStore()
 const desc = ref('')
@@ -42,6 +46,5 @@ const add = () => {
 </script>
 
 <style>
-/* Add simple spacing */
 input, select { margin: 0.5rem; }
 </style>

@@ -10,12 +10,12 @@
     <p v-if="!store.loading && store.recipes.length === 0">No recipes found</p>
 
     <div class="recipes">
-      <div class="card" v-for="recipe in store.recipes" :key="recipe.idMeal">
-        <img :src="recipe.strMealThumb" :alt="recipe.strMeal" />
-        <h3>{{ recipe.strMeal }}</h3>
-        <p>Category: {{ recipe.strCategory }}</p>
-        <a :href="recipe.strSource || '#' " target="_blank">View Recipe</a>
-      </div>
+        <div class="card" v-for="recipe in store.recipes" :key="recipe.idMeal">
+            <img :src="recipe.strMealThumb" :alt="recipe.strMeal" />
+            <h3>{{ recipe.strMeal }}</h3>
+            <p>Category: {{ recipe.strCategory }}</p>
+            <p v-if="recipe.strInstructions">{{ recipe.strInstructions }}</p>
+        </div>
     </div>
   </div>
 </template>
