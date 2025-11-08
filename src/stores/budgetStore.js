@@ -2,44 +2,62 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 
 export const useBudgetStore = defineStore('budget', () => {
-  const transactions = ref([]) // { id, type: 'income'|'expense', amount, description }
+  const transactions = ref([])
 
-  // Load saved transactions on store initialization
-  const loadTransactions = () => {
-    const saved = localStorage.getItem('transactions')
-    if (saved) transactions.value = JSON.parse(saved)
+  // Load from localStorage on start
+  const saved = localStorage.getItem('budget-transactions')
+  if (saved) {
+    transactions.value = JSON.parse(saved).map(t => ({
+      ...t,
+      date: new Date(t.date) // convert back to Date object
+    }))
   }
-  loadTransactions()
 
   // Watch for changes and save to localStorage
-  watch(transactions, (newVal) => {
-    localStorage.setItem('transactions', JSON.stringify(newVal))
-  }, { deep: true })
+  watch(
+    transactions,
+    (newVal) => {
+      // Store date as ISO string
+      const toStore = newVal.map(t => ({ ...t, date: t.date.toISOString() }))
+      localStorage.setItem('budget-transactions', JSON.stringify(toStore))
+    },
+    { deep: true }
+  )
 
-  const addTransaction = (type, amount, description) => {
-    if (!amount || isNaN(amount)) return
+  const addTransaction = (type, amount, description, date = new Date()) => {
     transactions.value.push({
       id: Date.now(),
-      type,
-      amount: parseFloat(amount),
-      description
+      type: type.charAt(0).toUpperCase() + type.slice(1), // capitalize type
+      amount,
+      description,
+      date
     })
   }
 
   const removeTransaction = (id) => {
-    const index = transactions.value.findIndex(t => t.id === id)
-    if (index !== -1) transactions.value.splice(index, 1)
+    transactions.value = transactions.value.filter(t => t.id !== id)
   }
 
-  const totalIncome = computed(() => 
-    transactions.value.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0)
+  const totalIncome = computed(() =>
+    transactions.value
+      .filter(t => t.type.toLowerCase() === 'income')
+      .reduce((sum, t) => sum + t.amount, 0)
   )
 
-  const totalExpense = computed(() => 
-    transactions.value.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+  const totalExpense = computed(() =>
+    transactions.value
+      .filter(t => t.type.toLowerCase() === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0)
   )
 
   const balance = computed(() => totalIncome.value - totalExpense.value)
 
-  return { transactions, addTransaction, removeTransaction, totalIncome, totalExpense, balance }
+  return {
+    transactions,
+    addTransaction,
+    removeTransaction,
+    totalIncome,
+    totalExpense,
+    balance
+  }
 })
